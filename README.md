@@ -1,6 +1,46 @@
 Netflix WebCrypto (nfwebcrypto)
 ================================
 
+Netflix WebCrypto is a partial implementation of the [W3C Web Cryptography API] [1],
+22 April 1013 Editor's Draft, as a native Chrome Pepper (PPAPI) plugin. Its
+goal is to make the API available to web developers for experimentation prior
+to its implementation by browser vendors. Currently only Google Chrome / Chromium
+on linux is supported.
+
+  [1]: http://www.w3.org/TR/WebCryptoAPI/ "W3C Web Cryptography API"
+  
+The published Web Crypto API is not currently implemented in its entirety, due to
+limitations of browser plugin technology, and our focus on algorithms most useful
+to Netflix. Specifically,
+
+* The streaming / progressive processing model in not supported
+* Synchronous API's like getRandomValues() are not supported
+* Algorithm normalizing rules are not fully implemented
+* Interfaces supported:
+  + Key, KeyPair
+  + KeyOperation
+  + CryptoOperation
+* SubtleCrypto interface methods supported
+  + encrypt, decrypt
+  + sign, verify
+  + generateKey
+  + exportKey, importKey
+  + wrapKey, unwrapKey
+* Algorithms supported:
+  + HMAC SHA-256: sign, verify
+  + AES-128 CBC with PKCS#5 padding: encrypt, decrypt
+  + RSASSA-PKCS1-v1_5  (Up to 2048 bits): import, verify
+  + RSA-OAEP (Up to 2048 bits): wrap/unwrap*, export, generate
+
+*Wrap/Unwrap operations support protection of the JWE payload with AES128-GCM.
+It is be possible to unwrap the following key types: HMAC SHA-256 and AES-128 CBC.
+
+Requirements
+------------
+* Ubuntu 12.04 with build-essentials, openssl-dev, and cmake 2.8, or equivalent
+* Google Chrome / Chromium R22 or later
+* A web server of your choice (to run the unit tests)
+
 Directory Tour
 --------------
 
