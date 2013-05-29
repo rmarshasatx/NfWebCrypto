@@ -83,7 +83,7 @@ The following has been verified on Ubunutu 12.04. cmake 2.8 or later is required
 
     $ mkdir buildDir
     $ cd buildDir
-    $ cmake -DCMAKE_TOOLCHAIN_FILE=<repo>/cmake/toolchains/linux64.cmake -DCMAKE_BUILD_TYPE=[Debug|Release] <repo>
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=(repo)/cmake/toolchains/linux64.cmake -DCMAKE_BUILD_TYPE=[Debug|Release] (repo)
     $ make -j<N>
 
 Build Results
@@ -91,28 +91,37 @@ Build Results
 
 Browser plugin - This is registered and run within the Chrome browser.
 
-    <repo>/cadmium-plugin/libnfwebcrypto.so
-    <repo>/cadmium-plugin/nfwebcrypto.info
+    (repo)/cadmium-plugin/libnfwebcrypto.so
+    (repo)/cadmium-plugin/nfwebcrypto.info
     
 Native gtest unit test executable (if built). This is run from the command
 line.
 
-    <repo>/crypto/test/test
+    (repo)/crypto/test/test
     
 Native CadmiumCrypto archive. Native apps will link to this archive.
 
-    <repo>/crypto/libcadcrypto.a
+    (repo)/crypto/libcadcrypto.a
 
 
 How to run Unit Tests
 ---------------------
 
-1. Host <repo>/web on your web server.
+1. Host (repo)/web on your web server.
 
-2. Run chrome wit the plugin installed using the command line. See
-<repo>/misc/start.sh for an example. Once chrome is running, make sure the
+2. Run chrome with the plugin installed using the command line. See
+(repo)/misc/start.sh for an example. Once chrome is running, make sure the
 plugin is loaded in chrome://plugins.
 
-3. Point chrome to test_qa.html on your web server. The tests will run
-automatically. 
+3. Point chrome at test_qa.html on your web server. The tests will run
+automatically.
+
+Sample Code
+-----------
+
+Please see the javascript unit tests for examples of how to operate the
+Web Crypto API.
+
+TODO - add some simple examples here
+
 
