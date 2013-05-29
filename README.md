@@ -1,4 +1,4 @@
-Netflix WebCrypto
+Netflix WebCrypto (nfwebcrypto)
 ================================
 
 Directory Tour
