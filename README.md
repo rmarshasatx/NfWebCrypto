@@ -5,7 +5,7 @@ Netflix WebCrypto is a partial implementation of the [W3C Web Cryptography API] 
 22 April 1013 Editor's Draft, as a native Chrome Pepper (PPAPI) plugin. Its
 goal is to make the API available to web developers for experimentation prior
 to its implementation by browser vendors. Currently only Google Chrome / Chromium
-on linux is supported.
+on linux and Chrome OS is supported.
 
   [1]: http://www.w3.org/TR/WebCryptoAPI/ "W3C Web Cryptography API"
   
