@@ -107,13 +107,11 @@ Native CadmiumCrypto archive. Native apps will link to this archive.
 How to run Unit Tests
 ---------------------
 
-1. Host (repo)/web on your web server.
-
-2. Run chrome with the plugin installed using the command line. See
+1. Run Chrome with the plugin installed using the --register-pepper-plugins command line. See
 (repo)/misc/start.sh for an example. Once chrome is running, make sure the
 plugin is loaded in chrome://plugins.
 
-3. Point chrome at test_qa.html on your web server. The tests will run
+2. Point Chrome at http://netflix.github.io/nfwebcrypto/web/test_qa.html. The tests will run
 automatically.
 
 Sample Code
