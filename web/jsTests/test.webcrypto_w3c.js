@@ -21,305 +21,203 @@
 
     // get "crypto" from the right namespace
     var crypto = nfCrypto;
-    // var crypto = window.crypto;
-    // var crypto = window.msCrypto;
-    // var crypto = window.webkitCrypto;
     var cryptoSubtle = crypto.subtle;
-
-    // --------------------------------------------------------------------------------
-    describe("crypto interface", function () {
-
-        it("crypto exists", function () {
-            expect(crypto).toBeDefined();
+    
+    function objCompare(a, b) {
+        return Object.keys(a).every(function(k) {
+            return a[k] === b[k];
         });
+    }
 
-        it("crypto.getRandomValues exists", function () {
-            expect(typeof crypto.getRandomValues).toEqual("function");
-        });
-
-        it("crypto.subtle exists", function () {
-            expect(cryptoSubtle).toBeDefined();
-        });
-
-        it("crypto.subtle.encrypt exists", function () {
-            expect(typeof cryptoSubtle.encrypt).toEqual("function");
-        });
-
-        it("crypto.subtle.decrypt exists", function () {
-            expect(typeof cryptoSubtle.decrypt).toEqual("function");
-        });
-
-        it("crypto.subtle.sign exists", function () {
-            expect(typeof cryptoSubtle.sign).toEqual("function");
-        });
-
-        it("crypto.subtle.verify exists", function () {
-            expect(typeof cryptoSubtle.verify).toEqual("function");
-        });
-
-        it("crypto.subtle.digest exists", function () {
-            expect(typeof cryptoSubtle.digest).toEqual("function");
-        });
-
-        it("crypto.subtle.generateKey exists", function () {
-            expect(typeof cryptoSubtle.generateKey).toEqual("function");
-        });
-
-        it("crypto.subtle.deriveKey exists", function () {
-            expect(typeof cryptoSubtle.deriveKey).toEqual("function");
-        });
-
-        it("crypto.subtle.importKey exists", function () {
-            expect(typeof cryptoSubtle.importKey).toEqual("function");
-        });
-
-        it("crypto.subtle.exportKey exists", function () {
-            expect(typeof cryptoSubtle.exportKey).toEqual("function");
-        });
-
-        it("crypto.subtle.wrapKey exists", function () {
-            expect(typeof cryptoSubtle.wrapKey).toEqual("function");
-        });
-
-        it("crypto.subtle.unwrapKey exists", function () {
-            expect(typeof cryptoSubtle.unwrapKey).toEqual("function");
-        });
-
-    });
-
-    // --------------------------------------------------------------------------------
-
-    describe("RandomSource", function () {
-
-        it("getRandomValues", function () {
-            runs(function () {
-                var zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-                var abv1 = new Uint8Array(8);
-                var abv2 = crypto.getRandomValues(abv1);
-
-                expect(abv1).toBe(abv2);
-                expect(abv2).toNotEqual(zeros);
-
-                var abv3 = new Uint8Array(8);
-                var abv4 = crypto.getRandomValues(abv3);
-
-                expect(abv3).toBe(abv4);
-                expect(base16.stringify(abv4)).not.toEqual(base16.stringify(zeros));
-                expect(base16.stringify(abv4)).not.toEqual(base16.stringify(abv2));
-            });
-
-        });
-
-    });
-
-    // --------------------------------------------------------------------------------
-
-    describe("SHA", function () {
-
-        it("digest SHA-256", function () {
+    test(function() {
+        assert_not_equals(crypto, undefined, "crypto exists");
+        assert_equals(typeof crypto.getRandomValues, "function", "crypto.getRandomValues exists");
+        assert_not_equals(cryptoSubtle, undefined, "crypto.subtle exists");
+        assert_equals(typeof cryptoSubtle.encrypt,     "function", "crypto.subtle.encrypt exists");
+        assert_equals(typeof cryptoSubtle.decrypt,     "function", "crypto.subtle.decrypt exists");
+        assert_equals(typeof cryptoSubtle.sign,        "function", "crypto.subtle.sign exists");
+        assert_equals(typeof cryptoSubtle.verify,      "function", "crypto.subtle.verify exists");
+        assert_equals(typeof cryptoSubtle.digest,      "function", "crypto.subtle.digest exists");
+        assert_equals(typeof cryptoSubtle.generateKey, "function", "crypto.subtle.generateKey exists");
+        assert_equals(typeof cryptoSubtle.deriveKey,   "function", "crypto.subtle.deriveKey exists");
+        assert_equals(typeof cryptoSubtle.exportKey,   "function", "crypto.subtle.exportKey exists");
+        assert_equals(typeof cryptoSubtle.wrapKey,     "function", "crypto.subtle.wrapKey exists");
+        assert_equals(typeof cryptoSubtle.unwrapKey,   "function", "crypto.subtle.unwrapKey exists");
+    }, "crypto interface");
+    
+    test(function() {
+        var zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        var abv1 = new Uint8Array(8);
+        var abv2 = crypto.getRandomValues(abv1);
+        assert_equals(abv1, abv2);
+        assert_not_equals(base16.stringify(abv2), base16.stringify(zeros));
+        var abv3 = new Uint8Array(8);
+        var abv4 = crypto.getRandomValues(abv3);
+        assert_equals(abv3, abv4);
+        assert_not_equals(base16.stringify(abv4), base16.stringify(zeros));
+        assert_not_equals(base16.stringify(abv4), base16.stringify(abv2));
+    }, "RandomSource");
+    
+    var SHA = (function() {
+        var test1 = async_test("digest SHA-256");
+        var test2 = async_test("digest SHA-384");
+        
+        test1.step(function() {
             // convenient calculator here: http://www.fileformat.info/tool/hash.htm
             var data = base16.parse("6162636462636465636465666465666765666768666768696768696a68696a6b696a6b6c6a6b6c6d6b6c6d6e6c6d6e6f6d6e6f706e6f7071"),
                 result_sha256_hex = "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1";
-
-            var op,
-                result,
-                error,
-                complete;
-
-            runs(function () {
-                op = cryptoSubtle.digest({ name: "SHA-256" }, data);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    complete = true;
-                    result = e.target.result;
-                };
+            var op = cryptoSubtle.digest({ name: "SHA-256" }, data);
+            op.onerror = test1.step_func(function() {
+                assert_true(false);
+                test1.done();
             });
-
-            waitsFor(function () {
-                return error || complete;
-            });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(complete).toBeTruthy();
-                expect(base16.stringify(result)).toBe(result_sha256_hex);
+            op.oncomplete = test1.step_func(function(e) {
+                assert_equals(base16.stringify(e.target.result), result_sha256_hex);
+                test1.done();
             });
         });
-
-        it("digest SHA-384", function () {
-            // convenient calculator here: http://www.fileformat.info/tool/hash.htm
+        
+        test2.step(function() {
             var data = base16.parse("6162636462636465636465666465666765666768666768696768696a68696a6b696a6b6c6a6b6c6d6b6c6d6e6c6d6e6f6d6e6f706e6f7071"),
                 result_sha384_hex = "3391fdddfc8dc7393707a65b1b4709397cf8b1d162af05abfe8f450de5f36bc6b0455a8520bc4e6f5fe95b1fe3c8452b";
-
-            var op,
-                result,
-                error,
-                complete;
-
-            runs(function () {
-                op = cryptoSubtle.digest({ name: "SHA-384" }, data)
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    complete = true;
-                    result = e.target.result;
-                };
+            var op = cryptoSubtle.digest({ name: "SHA-384" }, data);
+            op.onerror = test2.step_func(function() {
+                assert_true(false);
+                test2.done();
             });
-
-            waitsFor(function () {
-                return error || complete;
+            op.oncomplete = test2.step_func(function(e) {
+                assert_equals(base16.stringify(e.target.result), result_sha384_hex);
+                test2.done();
             });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(complete).toBeTruthy();
-                expect(base16.stringify(result)).toBe(result_sha384_hex);
-            });
-        });
-    });
-
-    // --------------------------------------------------------------------------------
-
-    describe("AES", function () {
-
-        it("importKey/exportKey raw AES-CBC", function () {
-            var error;
-
-            var key,
-                keyData = new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F]),
-                keyData2;
-
-            runs(function () {
-                error = undefined;
-                // TODO:
-                // Once https://www.w3.org/Bugs/Public/show_bug.cgi?id=21435 is resolved, might need to pass in length as part of AlgorithmIdentifier
+        })
+        
+    }());
+    
+    var AES = (function() {
+        
+        (function AesImportExportRaw() {
+            var keyData = new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                                          0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D,
+                                          0x0E, 0x0F]);
+            var test = async_test("importKey/export raw AES-CBC");
+            test.step(function() {
+                // TODO: Once https://www.w3.org/Bugs/Public/show_bug.cgi?id=21435 is resolved,
+                // might need to pass in length as part of AlgorithmIdentifier
                 var op = cryptoSubtle.importKey("raw", keyData, { name: "AES-CBC" }, true);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    key = e.target.result;
-                };
+                op.onerror = test.step_func(function (e) {
+                    assert_true(false);
+                    test.done();
+                });
+                op.oncomplete = test.step_func(function (e) {
+                    var key = e.target.result;
+                    assert_not_equals(key, undefined, "crypto exists");
+                    assert_true(key.extractable);
+                    exportAndCheck(key);
+                });
             });
-
-            waitsFor(function () {
-                return key || error;
-            });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(key).toBeDefined();
-                expect(key.extractable).toBe(true);
-            });
-
-            runs(function () {
-                error = undefined;
+            function exportAndCheck(key) {
                 var op = cryptoSubtle.exportKey("raw", key);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    keyData2 = e.target.result;
-                };
-            });
-
-            waitsFor(function () {
-                return keyData2 || error;
-            });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(keyData2).toBeDefined();
-                expect(base16.stringify(keyData2)).toEqual(base16.stringify(keyData));
-            });
-
-        });
-
-        it("importKey/exportKey jwk A128CBC oct", function () {
-            var error;
-
+                op.onerror = test.step_func(function (e) {
+                    assert_true(false);
+                    test.done();
+                });
+                op.oncomplete = test.step_func(function (e) {
+                    var keyData2 = e.target.result;
+                    assert_not_equals(keyData2, undefined);
+                    assert_equals(base16.stringify(keyData2), base16.stringify(keyData));
+                    test.done();
+                });
+            }
+        }());
+        
+        (function AesImportExportJwk() {
             var rawData = base16.parse("17AE37CAD5EC70D2653FBE7E5E42414C"),
-                key,
                 jwkData = latin1.parse(JSON.stringify({
                     alg:    "A128CBC",
                     kty:    "oct",
                     use:    "enc",
                     extractable:    true,
                     k:      base64.stringifyUrlSafe(rawData),
-                })),
-                rawData2;
-
-            runs(function () {
-                error = undefined;
+                }));
+            var test = async_test("importKey/exportKey jwk A128CBC oct");
+            test.step(function() {
                 var op = cryptoSubtle.importKey("jwk", jwkData, { name: "AES-CBC" }, true);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    key = e.target.result;
-                };
+                op.onerror = test.step_func(function(e) {
+                    assert_true(false);
+                    test.done();
+                });
+                op.oncomplete = test.step_func(function(e) {
+                    var key = e.target.result;
+                    assert_not_equals(key, undefined);
+                    assert_true(key.extractable);
+                    assert_array_equals(key.keyUsages, ["encrypt", "decrypt"]);
+                    assert_equals(key.type, "secret");
+                    exportAndCheck1(key);
+                });
             });
-
-            waitsFor(function () {
-                return key || error;
-            });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(key).toBeDefined();
-                expect(key.extractable).toBe(true);
-                expect(key.keyUsages).toEqual(["encrypt", "decrypt"]);
-                expect(key.type).toBe("secret");
-                // TODO: verify other fields of key
-            });
-
-            runs(function () {
-                error = undefined;
+            function exportAndCheck1(key) {
                 var op = cryptoSubtle.exportKey("raw", key);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    rawData2 = e.target.result;
-                };
-            });
-
-            waitsFor(function () {
-                return rawData2 || error;
-            });
-
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(rawData2).toBeDefined();
-                expect(base16.stringify(rawData2)).toEqual(base16.stringify(rawData));
-            });
-
-            runs(function () {
-                error = undefined;
-                rawData2 = undefined;
+                op.onerror = test.step_func(function(e) {
+                    assert_true(false);
+                    test.done();
+                });
+                op.oncomplete = test.step_func(function(e) {
+                    var rawData2 = e.target.result;
+                    assert_not_equals(rawData2, undefined);
+                    assert_equals(base16.stringify(rawData2), base16.stringify(rawData));
+                    exportAndCheck2(key);
+                });
+            }
+            function exportAndCheck2(key) {
                 var op = cryptoSubtle.exportKey("jwk", key);
-                op.onerror = function (e) {
-                    error = "ERROR";
-                };
-                op.oncomplete = function (e) {
-                    rawData2 = e.target.result;
-                };
-            });
+                op.onerror = test.step_func(function(e) {
+                    assert_true(false);
+                    test.done();
+                });
+                op.oncomplete = test.step_func(function(e) {
+                    var rawData2 = e.target.result;
+                    assert_not_equals(rawData2, undefined);
+                    assert_true(objCompare(JSON.parse(latin1.stringify(rawData2)), JSON.parse(latin1.stringify(jwkData))));
+                    test.done();
+                });
+            }
+        }());
+        
+        (function generateKeyAesCbcExtractable() {
+            // port it("generateKey AES-CBC (extractable)", function () { to here
+        }());
 
-            waitsFor(function () {
-                return rawData2 || error;
-            });
+        (function generateKeyAesCbcNotExtractable() {
+            // it("generateKey AES-CBC (not extractable)", function () { to here
+        }());
 
-            runs(function () {
-                expect(error).toBeUndefined();
-                expect(rawData2).toBeDefined();
-                expect(JSON.parse(latin1.stringify(rawData2))).toEqual(JSON.parse(latin1.stringify(jwkData)));
-            });
-        });
+        (function encryptDecryptAesCbc() {
+            // port it("encrypt/decrypt AES-CBC", function () { to here
+        }());
+        
+    }());
+    
+
+    var HMAC = (function() {
+        // port describe("HMAC", function () { to here
+    }());
+
+    var RSAkeys = (function() {
+        // port describe("RSA keys", function () { to here
+    }());
+    
+    // ... rest of describes
+
+    
+    /*
+
+    WORK IN PROGRESS
+    Porting from Jasmine frameworks to testharness.js framework
+    
+    // --------------------------------------------------------------------------------
+
+    describe("AES", function () {
+
 
         it("generateKey AES-CBC (extractable)", function () {
             var error;
@@ -1862,6 +1760,104 @@
             
         });
 
+        it("unwrapKey jwe (RSA-OAEP + A128GCM) + jwk", function () {
+
+            var error,
+                unwrappedKey,
+                wrappingKeyPrivate,
+                rawKeyData;
+
+            // import a specific private RSA key to unwrap a known JWE with
+            runs(function () {
+                error = undefined;
+                // This unwrapping key is taken from a run of Wes's java test code.
+                // If is required to unwrap the test data from the same run used
+                // in the unwrap test below.
+                var pkcs8PrivKeyData = base64.parse(
+                    "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMeERCGt3nccSlob" +
+                    "LMadbUX5q165j5Ds0832Al4/had/a9PiUpsW0MarYBhPd4j0amIC8zU0PZSr5khi" +
+                    "w3WSF/+sV+N8COh8h8ClBQ3hxLTX/Mmnp5ioz5FBLEKWmHykNat042Ml7Rt9Opfg" +
+                    "ESC63/KxGjAM1BzgxMmEUS8pxbYnAgMBAAECgYEAwIIzxxdflygZ6bVcz8toe2M6" +
+                    "4ixDhT+t4oXjpRK/oG1HGmu+7tvl2DvVfb93hBLpbuaPyp88Z+4xRVjeZdvwAFGo" +
+                    "PWUOgWPB3soi2q7BrDev1svZ499YnbhnxhAdXyLowuG3cituy6pydYnpDUn246qG" +
+                    "YkhsrnNumb1n0bZ92DkCQQD1eefu1upV4T+V8my443Mcf6VJfmkkGYLgMboFmBo4" +
+                    "nmE7yEe1gZp5AK2zwLBroDAcBtc6EXUahrQ3+c9rzIj7AkEA0BH0pdipyRZFGBX/" +
+                    "n1OH4q9kjWDnnS16uMYrcAu8MTSbcaolOHWMMXE0I8ce2xqjSV3NPExLBnlc814Y" +
+                    "BglXxQJBAM4NumZ9+M6F+T4A9MpuAl5Vt4Ttm4w17eoLU78GYlxMdgocoDT3yZbw" +
+                    "vt44TN7K5Bdilp+jr8zIbdbe1wIB+qkCQEeVVdjU8JzI955wuxACeeaINwzYwPZ3" +
+                    "VhhJvVn//4/iLHRvd/yznDbKXojMkZYJ1RGBnwFWsh0ZFdx4i8VP440CQBukT0WS" +
+                    "CgcdYiD2HQl/3x0Jjx7W9jbJqFrOVjufV5pdgC3ZoztvklDGkl32iB33lBIPnKkj" +
+                    "vxzYXFLCSXTjN/4="
+                );
+                var op = cryptoSubtle.importKey("pkcs8", pkcs8PrivKeyData, { name: "RSA-OAEP", params: { hash: { name: "SHA-1"} } }, false);
+                op.onerror = function (e) {
+                    error = "ERROR";
+                };
+                op.oncomplete = function (e) {
+                    wrappingKeyPrivate = e.target.result;
+                };
+            });
+            waitsFor(function () {
+                return wrappingKeyPrivate || error;
+            });
+            runs(function () {
+                expect(error).toBeUndefined();
+                expect(wrappingKeyPrivate).toBeDefined();
+                expect(wrappingKeyPrivate.type).toBe("private");
+                expect(wrappingKeyPrivate.extractable).toBe(false);
+                expect(wrappingKeyPrivate.algorithm.name).toBe("RSA-OAEP");
+            });
+
+            // unwrap a specific JWE that was wrapped with the public version of
+            // the private wrapping key above
+            runs(function () {
+                error = undefined;
+                // jweKeyData is a JWE Compact Serialization: A representation of the JWE as the concatenation of:
+                //     Encoded JWE Header,
+                //     Encoded JWE Encrypted Content Master Key (CMK),
+                //     Encoded JWE Initialization Vector,
+                //     Encoded JWE Ciphertext,
+                //     Encoded JWE Integrity Value,
+                // in that order, with the five strings being separated by four period ('.') characters.
+                // Encoding of each part is latin1 url-safe base64 encoding
+                // This particular JWE data is RSA-OAEP + A128GCM
+                // The cleartext wrapped inside it is a JWK with the value
+                // {"alg":"A128","kty":"oct","use":"enc","extractable":false,"k":"F643ytXscNJlP75-XkJBTA"}
+
+                // NOTE:
+                // This data is not JWK compliant. The native code was hacked to accept JWK alg 'A128'
+                // so we can use this known data in this test.
+
+                var jweKeyData =latin1.parse(
+                    "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhHQ00ifQ" + "." +
+                    "rxekf14ceqA0M9pBM7lavZ9fbSKhDw-LFrZ2jZg2E4BbOhhc69QJvDP56AcCAjhpY8ECm0SAsBFsPF7LduZnEfK1DyfeS09U1TVrQiRvN97eWtNZ26ja8dxXNETPV14VDgf9ODUa8ecZvEI7hroAV9ZG8UJWaYuxy_pPLLVu7mg" + "." +
+                    "6cZml7DurDVOuGWD37xQ-g" + "." +
+                    "Be5kJUkz9FpZdg0wTKozGcDXzGcBFbIu9vk4HXGhRTKtLl8Zej_l9wHUfNHvT62cfZrJQKh8OlqJrGoBa5LoOs56HHXSS4GLiV3m_dOODP3uLQkDAH-D" + "." +
+                    "P4HvqHNjx3sKu4uFPqZHcw");
+
+                var unwrapOp = cryptoSubtle.unwrapKey(jweKeyData, null, wrappingKeyPrivate);
+
+                unwrapOp.onerror = function (e) {
+                    error = "ERROR";
+                };
+                unwrapOp.oncomplete = function (e) {
+                    unwrappedKey = e.target.result;
+                };
+            });
+            waitsFor(function () {
+                return unwrappedKey || error;
+            });
+            runs(function () {
+                expect(error).toBeUndefined();
+                expect(unwrappedKey).toBeDefined();
+                expect(unwrappedKey.algorithm).toEqual({"name":"AES-CBC"});
+                expect(unwrappedKey.extractable).toBe(false);
+                expect(base16.stringify(unwrappedKey.keyUsages)).toBe(base16.stringify(["encrypt","decrypt"]));
+                expect(unwrappedKey.type).toBe("secret");
+            });
+
+        });
+
         it("generateKey(RSA)/importKey(AES)/encrypt/wrapKey/unwrapKey/decrypt", function () {
             var error,
                 pubKey,
@@ -2415,5 +2411,5 @@
         });
 
     });
-
+*/
 })();

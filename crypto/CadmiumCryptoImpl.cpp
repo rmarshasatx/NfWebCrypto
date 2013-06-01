@@ -606,7 +606,7 @@ CadErr CadmiumCrypto::CadmiumCryptoImpl::importJwk(const Vuc& keyVuc,
             if (jwkAad.size())
                 myAlgVar["params"]["additionalData"] = jwk.mapValue<string>("data");
         }
-        else if (doesRightSideOfStringMatch(jwkAlg, "CBC") || jwkAlg == "A128")  // A128 is a hack for broken unit test data
+        else if (doesRightSideOfStringMatch(jwkAlg, "CBC"))
         {
             myAlgVar["name"] = "AES-CBC";
             const string jwkIvStr = jwk.mapValue<string>("iv");
@@ -1787,8 +1787,8 @@ CadErr CadmiumCrypto::CadmiumCryptoImpl::wrapJwe(uint32_t toBeWrappedKeyHandle,
         return CAD_ERR_CIPHERERROR;
     DLOG() << "\nencrypted CMK = " << toB64String(encCmkVuc) << endl;
 
-    // ---- Generate a random 128-bit initialization vector (IV)
-    const Vuc ivVuc(random::next(16));
+    // ---- Generate a random 96-bit initialization vector (IV)
+    const Vuc ivVuc(random::next(12));
     DLOG() << "\nIV  = " << toB64String(ivVuc) << endl;
 
     // ---- Construct the GCM "Additional Authenticated Data" parameter.
