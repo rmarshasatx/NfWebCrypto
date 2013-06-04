@@ -7,16 +7,13 @@ goal is to make the Web Crypto Javascript API [freely available](http://www.apac
 experimentation prior to its implementation by browser vendors. Currently only
 Google Chrome / Chromium on linux amd64 and Chrome OS amd64 is supported.
 
-The published Web Crypto API is not currently implemented in its entirety, due to
+Features
+--------
+
+NfWebCrypto does not implement the Web Crypto API in its entirety, due to
 limitations of browser plugin technology and initial focus on operations and
-algorithms most useful to Netflix. Specifically,
-
-Not Supported
-
-* The streaming/progressive processing model in not supported
-* Synchronous API's like getRandomValues() are not supported
-* Algorithm normalizing rules are not fully implemented
-* keyUsage is not currently enforced
+algorithms most useful to Netflix. However, the existing feature set supports
+many typical and common crypto use cases targeted by the Web Crypto API.
 
 Supported
 
@@ -45,8 +42,15 @@ Supported
 and support protection of the JWE payload with AES128-GCM.
 It is be possible to wrap/unwrap the following key types: HMAC SHA-256 and AES-128 CBC.
 
-Moving forward, Netflix will try to keep this implementation as much in sync with
-the latest draft Web Crypto API spec as possible.
+Not Supported
+
+* The streaming/progressive processing model in not supported
+* Synchronous API's like getRandomValues() are not supported
+* Algorithm normalizing rules are not fully implemented
+* keyUsage is not currently enforced
+
+Moving forward, Netflix will continue to enhance this implementation and try to keep it as much in sync as possible
+with the latest draft Web Crypto API spec.
 
 Requirements
 ------------
