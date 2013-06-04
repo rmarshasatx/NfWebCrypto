@@ -1,21 +1,25 @@
 Netflix WebCrypto (nfwebcrypto)
 ================================
 
-Netflix WebCrypto is a partial implementation of the [W3C Web Cryptography API] [1],
-22 April 1013 Editor's Draft, as a native Chrome Pepper (PPAPI) plugin. Its
-goal is to make the API available to web developers for experimentation prior
-to its implementation by browser vendors. Currently only Google Chrome / Chromium
-on linux and Chrome OS is supported.
+Netflix WebCrypto is a partial implementation of the [W3C Web Cryptography API](http://www.w3.org/TR/WebCryptoAPI/),
+22 April 2013 Editor's Draft, as a native Chrome Pepper (PPAPI) plugin. The
+goal is to make the Web Crypto Javascript API available to web developers for
+experimentation prior to its implementation by browser vendors. Currently only
+Google Chrome / Chromium on linux amd64 and Chrome OS amd64 is supported.
 
-  [1]: http://www.w3.org/TR/WebCryptoAPI/ "W3C Web Cryptography API"
-  
 The published Web Crypto API is not currently implemented in its entirety, due to
-limitations of browser plugin technology, and our focus on algorithms most useful
-to Netflix. Specifically,
+limitations of browser plugin technology and initial focus on operations and
+algorithms most useful to Netflix. Specifically,
 
-* The streaming / progressive processing model in not supported
+Not Supported
+
+* The streaming/progressive processing model in not supported
 * Synchronous API's like getRandomValues() are not supported
 * Algorithm normalizing rules are not fully implemented
+* keyUsage is not currently enforced
+
+Supported
+
 * Interfaces supported:
   + Key, KeyPair
   + KeyOperation
@@ -26,20 +30,36 @@ to Netflix. Specifically,
   + generateKey
   + exportKey, importKey
   + wrapKey, unwrapKey
-* Algorithms supported:
-  + HMAC SHA-256: sign, verify
-  + AES-128 CBC with PKCS#5 padding: encrypt, decrypt
-  + RSASSA-PKCS1-v1_5  (Up to 2048 bits): import, verify
-  + RSA-OAEP (Up to 2048 bits): wrap/unwrap*, export, generate
+* Key formats supported
+  + symmetric keys: raw and jwk (raw)
+  + asymmetric keys: pkcs#8 (public), spki (private), and jwk (public only)
+* Algorithms supported
+  + HMAC SHA-256: sign, verify, importKey, exportKey, generateKey
+  + AES-128 CBC w/ PKCS#5 padding: encrypt, decrypt, importKey, exportKey, generateKey
+  + RSASSA-PKCS1-v1_5: sign, verify, importKey, generateKey
+  + RSAES-PKCS1-v1_5: encrypt, decrypt, importKey, exportKey, generateKey
+  + RSA-OAEP: wrapKey*, unwrapKey*
+  + AES-KW: wrapKey*, unwrapKey*
 
-*Wrap/Unwrap operations support protection of the JWE payload with AES128-GCM.
-It is be possible to unwrap the following key types: HMAC SHA-256 and AES-128 CBC.
+*Wrap/Unwrap operations follow the Netflix [KeyWrap Proposal](http://www.w3.org/2012/webcrypto/wiki/KeyWrap_Proposal)
+and support protection of the JWE payload with AES128-GCM.
+It is be possible to wrap/unwrap the following key types: HMAC SHA-256 and AES-128 CBC.
+
+Moving forward, Netflix will try to keep this implementation as much in sync with
+the latest draft Web Crypto API spec as possible.
 
 Requirements
 ------------
-* Ubuntu 12.04 with build-essentials, openssl-dev, and cmake 2.8, or equivalent
-* Google Chrome / Chromium R22 or later
-* A web server of your choice (to run the unit tests)
+
+Linux
+
+* Ubuntu 12.04 64-bit with build-essentials, openssl-dev, and cmake 2.8, or equivalent
+* 64-bit Google Chrome / Chromium R22 or later
+
+Chrome OS
+
+* Chromium OS cross-build environment R22 or later
+* Chrome OS R22 or later (tested on R27)
 
 Directory Tour
 --------------
