@@ -37,6 +37,7 @@ Supported
   + AES-128 CBC w/ PKCS#5 padding: encrypt, decrypt, importKey, exportKey, generateKey
   + RSASSA-PKCS1-v1_5: sign, verify, importKey, generateKey
   + RSAES-PKCS1-v1_5: encrypt, decrypt, importKey, exportKey, generateKey
+  + Diffie-Hellman: generateKey, deriveKey
   + RSA-OAEP: wrapKey*, unwrapKey*
   + AES-KW: wrapKey*, unwrapKey*
 
