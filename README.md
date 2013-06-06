@@ -7,7 +7,7 @@ supports a stronger security model with no key material exposed to javascript. T
 Javascript API [freely available](http://www.apache.org/licenses/LICENSE-2.0) to web
 developers for experimentation and use prior to its implementation by browser vendors.
 
-Currently only Google Chrome / Chromium on linux amd64 and Chrome OS amd64 is supported.
+Currently only Google Chrome / Chromium on linux amd64 is supported.
 
 Features
 --------
@@ -61,12 +61,7 @@ Requirements
 Linux
 
 * Ubuntu 12.04 64-bit with build-essentials, openssl-dev, and cmake 2.8, or equivalent
-* 64-bit Google Chrome / Chromium R22 or later
-
-Chrome OS
-
-* Chromium OS cross-build environment R22 or later
-* Chrome OS R22 or later (tested on R27)
+* 64-bit Google Chrome / Chromium R22 or later (tested with R27)
 
 Directory Tour
 --------------
