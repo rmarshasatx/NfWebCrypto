@@ -2,7 +2,7 @@ Netflix WebCrypto (NfWebCrypto)
 ================================
 
 Netflix WebCrypto is a polyfill of the [W3C Web Cryptography API](http://www.w3.org/TR/WebCryptoAPI/),
-22 April 2013 Editor's Draft, as a native Chrome PPAPI (Pepper) plugin. Unlike a javascript polyfill, the native implementation
+22 April 2013 Editor's Draft, as a native Chrome PPAPI plugin. Unlike a javascript polyfill, the native implementation
 supports a stronger security model with no key material exposed to javascript. The goal is to make the Web Crypto
 Javascript API [freely available](http://www.apache.org/licenses/LICENSE-2.0) to web
 developers for experimentation and use prior to its implementation by browser vendors.
