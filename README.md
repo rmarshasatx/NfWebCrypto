@@ -1,4 +1,4 @@
-Netflix WebCrypto (nfwebcrypto)
+Netflix WebCrypto (NfWebCrypto)
 ================================
 
 Netflix WebCrypto is a polyfill of the [W3C Web Cryptography API](http://www.w3.org/TR/WebCryptoAPI/),
