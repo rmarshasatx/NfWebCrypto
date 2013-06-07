@@ -60,7 +60,7 @@ Requirements
 
 Linux
 
-* Ubuntu 12.04 64-bit with build-essentials, openssl-dev, and cmake 2.8, or equivalent
+* Ubuntu 12.04 64-bit with build-essential, openssl-devel-1.0.1c or later, and cmake 2.8 or later
 * 64-bit Google Chrome / Chromium R22 or later (tested with R27)
 
 Directory Tour
