@@ -133,7 +133,7 @@ How to run Unit Tests
 (repo)/misc/start.sh for an example. Once chrome is running, make sure the
 plugin is loaded in chrome://plugins.
 
-2. Point Chrome at http://netflix.github.io/nfwebcrypto/web/test_qa.html. The tests will run
+2. Point Chrome at http://netflix.github.io/NfWebCrypto/web/test_qa.html. The tests will run
 automatically.
 
 Sample Code
