@@ -30,13 +30,3 @@ set(CMAKE_CXX_COMPILER "${CROSSTOOLS_PREFIX}-g++")
 
 get_filename_component(TOOLCHAIN_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 include("${TOOLCHAIN_DIR}/common/cros_common.cmake")
-
-# FIXME: Do we need to specify 64-bit for this platform? Below does not work.
-#if(NOT CADMIUM_FLAGS)
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64" CACHE STRING "CFLAGS" FORCE)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" CACHE STRING "CXXFLAGS" FORCE)
-#    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64" CACHE STRING "LDFLAGS" FORCE)
-#    # Once already appended, don't append again
-#    set(CADMIUM_FLAGS TRUE CACHE BOOLEAN "." FORCE)
-#endif()
-

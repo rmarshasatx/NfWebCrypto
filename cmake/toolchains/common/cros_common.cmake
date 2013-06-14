@@ -18,6 +18,10 @@
 get_filename_component(TOOLCHAIN_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 include("${TOOLCHAIN_DIR}/common.cmake")
 
+set(CMAKE_C_FLAGS_GENTOO "${CMAKE_CXX_FLAGS_GENTOO} ${COMMON_CFLAGS}")
+set(CMAKE_CXX_FLAGS_GENTOO "${CMAKE_CXX_FLAGS_GENTOO} ${COMMON_CXXFLAGS}")
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "Gentoo")
 if(NOT CROS_FLAGS)
     # Google needs cros builds to have -ggdb symbols to support their crash
     # logger infrastructure. These must be stripped from release targets.
@@ -26,4 +30,5 @@ if(NOT CROS_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb --sysroot=${GENERIC_SYSROOT} -DCHROMEOS")
     # Once already appended, don't append again
     set(CROS_FLAGS TRUE CACHE BOOLEAN "." FORCE)
+endif()
 endif()

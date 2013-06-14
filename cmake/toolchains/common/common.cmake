@@ -15,13 +15,20 @@
 
 # The settings in this file are common to ALL builds
 
-# Compiler flags
-set(CMAKE_C_FLAGS "-fpic -Wall -fmessage-length=0 -Wchar-subscripts -fvisibility=hidden" CACHE STRING "CFLAGS")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fno-exceptions -fno-rtti" CACHE STRING "CXXFLAGS")
+# Common compiler flags
+set(COMMON_CFLAGS "-fpic -Wall -fmessage-length=0 -Wchar-subscripts -fvisibility=hidden")
+set(COMMON_CXXFLAGS "${COMMON_CFLAGS} -fno-exceptions -fno-rtti -DGTEST_HAS_RTTI=0")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -DBUILD_DEBUG" CACHE STRING "CMAKE_C_FLAGS_DEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -DBUILD_DEBUG" CACHE STRING "CMAKE_CXX_FLAGS_DEBUG")
+if (NOT CMAKE_BUILD_TYPE MATCHES "Gentoo")
+    # Default compiler flags
+    set(CMAKE_C_FLAGS "${COMMON_CFLAGS}" CACHE STRING "CFLAGS")
+    set(CMAKE_CXX_FLAGS "${COMMON_CXXFLAGS}" CACHE STRING "CXXFLAGS")
 
-# Linker flags. Explicit stdc++ is required for ARM builds for some reason.
-set(LDD_NO_EXECSTACK "-z noexecstack")
-set(CMAKE_EXE_LINKER_FLAGS "-ldl -lrt -lstdc++ ${LDD_NO_EXECSTACK}" CACHE STRING "LDFLAGS")
+    # Debug compiler flags
+    set(CMAKE_C_FLAGS_DEBUG "-DBUILD_DEBUG" CACHE STRING "CMAKE_C_FLAGS_DEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "-DBUILD_DEBUG" CACHE STRING "CMAKE_CXX_FLAGS_DEBUG")
+
+    # Linker flags. Explicit stdc++ is required for ARM builds for some reason.
+    set(LDD_NO_EXECSTACK "-Wl,-z -Wl,noexecstack")
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl -lrt -lstdc++ ${LDD_NO_EXECSTACK}" CACHE STRING "LDFLAGS")
+endif()
