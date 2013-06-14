@@ -144,7 +144,8 @@ nfwebcrypto.info.
 
 The start.sh script depends on the chrome executable present at
 /opt/google/chrome/chrome. Edit the script if this is not true. Finally, start
-chrome and run the unit tests hosted on github by running the script.
+chrome and run the [unit tests hosted on github](http://netflix.github.io/NfWebCrypto/web/test_qa.html)
+by running the script.
 
     $ ./start.sh
     
