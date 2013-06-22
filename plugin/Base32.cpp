@@ -1,75 +1,68 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/*
+ * (c) 2011 Netflix, Inc.  All content herein is protected by
+ * U.S. copyright and other applicable intellectual property laws and
+ * may not be copied without the express permission of Netflix, Inc.,
+ * which reserves all rights.  Reuse of any of this content for any
+ * purpose without the permission of Netflix, Inc. is strictly
+ * prohibited.
+ */
 #include "Base32.h"
-#include <limits>
-#include <base/DebugUtil.h>
 
 using namespace std;
 
 namespace
 {
 
-// Copied from chromium's chrome_util.cc
-string ByteArrayToBase32(const uint8_t* bytes, size_t size)
+// Base32 encode table according to RFC4648
+unsigned char encTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+// Encode 5 bytes to 8 bytes
+void encode5(uint8_t * in, int len, uint8_t * out)
 {
-    static const char kEncoding[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
-    // Eliminate special cases first.
-    if (size == 0)
+    uint64_t p, t=0;
+    for (int x=0, y=4; x < 5; ++x, --y)
     {
-        return string();
+        p = in[x];
+        t += p << ((+y)*8);
     }
-    else if (size == 1)
+    for (int x=0, y=7; x < 8; ++x, --y)
+        out[x] = encTable[((t >> ((+y)*5)) & 0x1F)];
+    if (len < 5)
     {
-        string ret;
-        ret.push_back(kEncoding[(bytes[0] & 0xf8) >> 3]);
-        ret.push_back(kEncoding[(bytes[0] & 0x07) << 2]);
-        return ret;
-    }
-    else if (size >= numeric_limits<size_t>::max() / 8)
-    {
-        // If |size| is too big, the calculation of |encoded_length| below will
-        // overflow.
-        DLOG() << "Byte array is too long.\n";
-        return string();
-    }
-
-    // Overestimate the number of bits in the string by 4 so that dividing by 5
-    // is the equivalent of rounding up the actual number of bits divided by 5.
-    const size_t encoded_length = (size * 8 + 4) / 5;
-
-    string ret;
-    ret.reserve(encoded_length);
-
-    // A bit stream which will be read from the left and appended to from the
-    // right as it's emptied.
-    uint16_t bit_stream = (bytes[0] << 8) + bytes[1];
-    size_t next_byte_index = 2;
-    int free_bits = 0;
-    while (free_bits < 16)
-    {
-        // Extract the 5 leftmost bits in the stream
-        ret.push_back(kEncoding[(bit_stream & 0xf800) >> 11]);
-        bit_stream <<= 5;
-        free_bits += 5;
-
-        // If there is enough room in the bit stream, inject another byte (if there
-        // are any left...).
-        if (free_bits >= 8 && next_byte_index < size)
+        switch (len)
         {
-            free_bits -= 8;
-            bit_stream += bytes[next_byte_index++] << free_bits;
+            case 4: // 1
+                out[7] = '=';
+                break;
+            case 3: // 3
+                out[7] = '=';
+                out[6] = '=';
+                out[5] = '=';
+                break;
+            case 2: // 4
+                out[7] = '=';
+                out[6] = '=';
+                out[5] = '=';
+                out[4] = '=';
+                break;
+            case 1: // 6
+                out[7] = '=';
+                out[6] = '=';
+                out[5] = '=';
+                out[4] = '=';
+                out[3] = '=';
+                out[2] = '=';
+                break;
+            default:
+                break;
         }
     }
+}
 
-    if (ret.length() != encoded_length)
-    {
-        DLOG() << "Base32::encode(): Encoding doesn't match expected length.\n";
-        return string();
-    }
-    return ret;
+void base32Encode(uint8_t * in, int len, uint8_t * out)
+{
+    for (int x=0, y=0; x < len; x+=5, y+=8)
+        encode5(in+x, len-x, out+y);
 }
 
 }   // anonymous namespace
@@ -79,7 +72,10 @@ namespace cadmium { namespace Base32
 
 string encode(vector<uint8_t>& in)
 {
-    return ByteArrayToBase32(&in[0], in.size());
+    const size_t outSize = in.size() * 8 / 5;
+    vector<uint8_t> out(outSize, 0);
+    base32Encode(&in[0], in.size(), &out[0]);
+    return string(out.begin(), out.end());
 }
 
 }}  // namespace cadmium::Base32
