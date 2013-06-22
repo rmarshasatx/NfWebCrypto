@@ -20,6 +20,7 @@
 #include <ppapi/c/private/ppb_instance_private.h>
 #include <ppapi/c/ppb_var.h>
 #include <ppapi/c/dev/ppb_crypto_dev.h>
+#include <ppapi/c/private/ppb_flash_device_id.h>
 #include <base/DebugUtil.h>
 #include <base/Variant.h>
 #include <base/Base64.h>
@@ -43,6 +44,7 @@ const char* const kUsedInterfaces[] = {
   PPB_INSTANCE_PRIVATE_INTERFACE,
   PPB_VAR_INTERFACE,
   PPB_CRYPTO_DEV_INTERFACE,
+  PPB_FLASH_DEVICEID_INTERFACE,
   PPB_CONSOLE_INTERFACE
 };
 const size_t kUsedInterfaceCount = sizeof(kUsedInterfaces) / sizeof(kUsedInterfaces[0]);
@@ -62,6 +64,45 @@ Vuc getRandBytes()
     (*crypto->GetRandomBytes)(reinterpret_cast<char*>(&randBytes[0]), randBytes.size());
     return randBytes;
 }
+
+class Callback
+{
+public:
+    virtual ~Callback() {}
+    virtual int32_t operator()(int32_t result) {return 0;}
+protected:
+    Callback() {}
+};
+
+template <typename Receiver>
+class MemberCallback : public Callback
+{
+public:
+    typedef uint32_t (Receiver::* Action)(uint32_t result);
+    MemberCallback(Receiver *r, Action a) : m_receiver(r), m_action(a) {assert(r);}
+    ~MemberCallback() {}
+    int32_t operator()(int32_t result) {return (m_receiver->*m_action)(result);}
+private:
+    Receiver * const m_receiver;
+    Action m_action;
+};
+
+class BackgroundInitThread : public cadmium::base::SimpleThread
+{
+public:
+    BackgroundInitThread(Callback * callback) : callback(callback) {}
+    ~BackgroundInitThread() {}
+    virtual void threadFunc()
+    {
+        if (!callback)
+            return;
+        (*callback)(0);
+        delete callback;
+        callback = NULL;
+    }
+private:
+    Callback * callback;
+};
 
 }   // namespace anonymous
 
@@ -83,6 +124,7 @@ PpInstance::~PpInstance()
     FUNCTIONSCOPELOG;
     LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, "PpInstance dtor");
     delete backgroundDispatcher_;
+    delete backgroundInitThread_;
 }
 
 bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
@@ -94,7 +136,8 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
 
     // announce
     stringstream banner;
-    banner << "Netflix WebCrypto Version " << Plugin_VERSION_MAJOR << "." << Plugin_VERSION_MINOR;
+    banner << "Netflix WebCrypto Version " << Plugin_VERSION_MAJOR << "."
+            << Plugin_VERSION_MINOR << "." << Plugin_VERSION_MICRO;
     DLOG() << banner << endl;
     LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, banner.str().c_str());
 
@@ -125,11 +168,34 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
     backgroundDispatcher_ = new BackgroundDispatcher(nativeBridge_.get());
     backgroundDispatcher_->start();
 
+    // Init the rest on a separate thread
+    backgroundInitThread_ =
+        new BackgroundInitThread(new MemberCallback<PpInstance>(this,
+            &PpInstance::initOnBackgroundThread));
+    bool success = backgroundInitThread_->start();
+    if (!success)
+    {
+        nativeBridge_->sendReady(-1);
+        DLOG() << "Unable to start background init thread\n";
+        LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_ERROR, "Unable to start background init thread");
+        return false;
+    }
+
+    return true;
+}
+
+// Note: for now the return value is ignored, so just message and assert on fatal.
+uint32_t PpInstance::initOnBackgroundThread(uint32_t /*result*/)
+{
+    FUNCTIONSCOPELOG;
+    assert(!isMainThread());
+
     LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, "PpInstance: Init complete, sending Ready message");
 
     nativeBridge_->sendReady(0);    // 0 means success; fail is not an option!
 
-    return true;
+    return 0;
+
 }
 
 // Returns true if the matching versions of all Pepper interfaces used by this

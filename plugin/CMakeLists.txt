@@ -16,8 +16,10 @@
 cmake_minimum_required (VERSION 2.8)
 
 # Version file
-set(Plugin_VERSION_MAJOR "1")
+# FIXME: pull version numbers from env vars first
+set(Plugin_VERSION_MAJOR "2")
 set(Plugin_VERSION_MINOR "0")
+set(Plugin_VERSION_MICRO "0")
 configure_file (
   "${PROJECT_SOURCE_DIR}/plugin/Version.h.in"
   "${PROJECT_BINARY_DIR}/Version.h"
@@ -48,10 +50,12 @@ include_directories(ppapi)
 
 # Sources
 set(PLUGIN_SOURCES
+    Base32.cpp
     BackgroundDispatcher.cpp
     BrowserConsoleLog.cpp
     MainThreadUtil.cpp
     NativeBridge.cpp
+    PpapiDeviceInfo.cpp
     PpInstance.cpp
     PpModule.cpp
 )
@@ -64,12 +68,12 @@ target_link_libraries(plugin ppapi base cadcrypto)
 set_target_properties(plugin PROPERTIES OUTPUT_NAME "${LIBNAME}")
 
 # set up for final copies
-set(FINAL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/cadmium-plugin)
+set(FINAL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/plugin)
 get_target_property(BIN_NAME plugin LOCATION)
 set(INFO_FILE ${LIBNAME}.info)
 
-# copy / edit the cadmium.info file from source dir template to bin dir result
-set(CMAKE_VERSION_STRING "${Plugin_VERSION_MAJOR}.${Plugin_VERSION_MINOR}" CACHE STRING "version")
+# copy/edit the cadmium.info file from source dir template to bin dir result
+set(CMAKE_VERSION_STRING "${Plugin_VERSION_MAJOR}.${Plugin_VERSION_MINOR}.${Plugin_VERSION_MICRO}" CACHE STRING "version")
 execute_process(COMMAND "date" "+%Y" OUTPUT_VARIABLE DATESTR)
 string(REGEX REPLACE "(\r?\n)+$" "" DATESTR "${DATESTR}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${INFO_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${INFO_FILE})

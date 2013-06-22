@@ -14,3 +14,11 @@ In priority order,
 9. Fix the error code mess
 10. Support Chrome on other platforms (macOS, Win)
 11. Port to other plugin technologies, e.g. NPAPI for Mozilla, Opera, Safari
+
+CrOS only
+a - build for CrOs DONE
+b - site check
+c - secure export/import key for persistent storage
+d - derive unique ESN
+e - smoke gtest tests for build
+f - name change for cros

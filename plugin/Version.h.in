@@ -20,5 +20,6 @@
 
 #define Plugin_VERSION_MAJOR @Plugin_VERSION_MAJOR@
 #define Plugin_VERSION_MINOR @Plugin_VERSION_MINOR@
+#define Plugin_VERSION_MICRO @Plugin_VERSION_MICRO@
 
 #endif /* VERSION_H_ */

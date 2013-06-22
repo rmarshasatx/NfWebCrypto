@@ -28,6 +28,8 @@ namespace cadmium
 class BackgroundDispatcher;
 class INativeBridge;
 
+namespace base { class SimpleThread; }
+
 namespace crypto { class CadmiumCrypto; }
 
 class PpInstance : public pp::InstancePrivate
@@ -38,10 +40,12 @@ public:
     virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
     virtual void HandleMessage(const pp::Var& message);
 private:
+    uint32_t initOnBackgroundThread(uint32_t);
     bool checkUsedInterfaces();
     void handleOptions(uint32_t argc, const char* argn[], const char* argv[]);
 private:
     pp::CompletionCallbackFactory<PpInstance> callbackFactory_;
+    base::SimpleThread * backgroundInitThread_;
     BackgroundDispatcher * backgroundDispatcher_;
     std::auto_ptr<cadmium::INativeBridge> nativeBridge_;
     std::auto_ptr<cadmium::crypto::CadmiumCrypto> cadmiumCrypto_;
