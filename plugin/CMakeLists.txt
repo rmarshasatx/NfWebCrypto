@@ -31,6 +31,8 @@ set(LIBNAME "nfwebcrypto")
 # Detect OS
 # CMAKE_TOOLCHAIN_FILE will be one of the following:
 #   crosArm.cmake
+#   crosAmd64.cmake
+#   crosIa32.cmake
 #   linux64.cmake
 # Switches for OS
 if(CMAKE_TOOLCHAIN_FILE MATCHES ".*cros.*")

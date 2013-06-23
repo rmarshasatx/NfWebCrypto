@@ -21,6 +21,7 @@
 #include <ppapi/c/ppb_var.h>
 #include <ppapi/c/dev/ppb_crypto_dev.h>
 #include <ppapi/c/private/ppb_flash_device_id.h>
+#include <ppapi/cpp/private/var_private.h>
 #include <base/DebugUtil.h>
 #include <base/Variant.h>
 #include <base/Base64.h>
@@ -64,6 +65,71 @@ Vuc getRandBytes()
     (*crypto->GetRandomBytes)(reinterpret_cast<char*>(&randBytes[0]), randBytes.size());
     return randBytes;
 }
+
+// site check code for Chrome OS only
+#ifdef CHROMEOS
+
+// Returns true if the right side of the string is exactly match.
+// For example, for "foobar", "bar" would return true but "oba" would not.
+// Uses a string comparison instead of index checks to avoid any potential
+// off-by-one or other mistakes.
+bool doesRightSideOfStringMatch(const std::string& str, const std::string& matchStr)
+{
+    assert(!str.empty());
+    assert(!matchStr.empty());
+    const size_t matchIndex = str.rfind(matchStr);
+    if (string::npos == matchIndex)
+        return false;
+    const string foundMatch = str.substr(matchIndex);
+    assert(!foundMatch.empty());
+    const bool isRigthSide = foundMatch == matchStr;
+    // matchIndex is also the length of the left side of the string.
+    assert(isRigthSide == (str.length() == matchIndex + matchStr.length()));
+    return isRigthSide;
+}
+
+pp::VarPrivate GetPageLocation(pp::InstancePrivate* instance)
+{
+    assert(instance);
+    return instance->GetWindowObject().GetProperty("top").GetProperty("location");
+}
+
+std::string GetPageHost(pp::InstancePrivate* instance)
+{
+    return GetPageLocation(instance).GetProperty("host").AsString();
+}
+
+std::string GetPageProtocol(pp::InstancePrivate* instance)
+{
+    return GetPageLocation(instance).GetProperty("protocol").AsString();
+}
+
+// Returns true if the protocol is supported and the right side of the host is
+// ".netflix.com"
+// The first '.' is important to prevent sites like evilnetflix.com.
+bool isSiteAllowed(pp::InstancePrivate* instance)
+{
+    const char *const allowedHost = ".netflix.com";
+    const string protocol = GetPageProtocol(instance);
+#ifdef NDEBUG
+    const bool isSupportedProtocol = (protocol == "https:");
+#else
+    const bool isSupportedProtocol = (protocol == "https:") || (protocol == "http:");
+#endif
+    if (!isSupportedProtocol)
+        return false;
+    return doesRightSideOfStringMatch(GetPageHost(instance), allowedHost);
+};
+
+// any origin OK when not Chrome OS
+#else
+
+bool isSiteAllowed(pp::InstancePrivate*)
+{
+    return true;
+}
+
+#endif  // ifdef CHROMEOS
 
 class Callback
 {
@@ -132,8 +198,6 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
     FUNCTIONSCOPELOG;
     assert(isMainThread());
 
-    //LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, "PpInstance::Init");
-
     // announce
     stringstream banner;
     banner << "Netflix WebCrypto Version " << Plugin_VERSION_MAJOR << "."
@@ -151,6 +215,14 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
 
     // handle input options and query line
     handleOptions(argc, argn, argv);
+
+    // origin check
+    if (!isSiteAllowed(this))
+    {
+        DLOG() << "Error: site not allowed" << endl;
+        LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_ERROR, "Error: site not allowed");
+        return false;
+    }
 
     // Make an instance of CadmiumCrypto and init it
     cadmiumCrypto_.reset(new CadmiumCrypto());
