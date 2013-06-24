@@ -17,8 +17,8 @@ In priority order,
 
 CrOS only
 a - build for CrOs DONE
-b - site check
-c - secure export/import key for persistent storage
+b - site check DONE
+c - name change for cros
 d - derive unique ESN
-e - smoke gtest tests for build
-f - name change for cros
+e - secure export/import key for persistent storage
+f - smoke gtest tests for build

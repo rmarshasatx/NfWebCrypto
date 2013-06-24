@@ -5,7 +5,7 @@
 # Registration file for the Netflix Web Crypto plugin.
 
 FILE_NAME=${SOPATH}
-PLUGIN_NAME="Netflix"
+PLUGIN_NAME="NfWebCrypto"
 VERSION="${CMAKE_VERSION_STRING}"
 DESCRIPTION="Provides W3C Web Crypto functionality"
 MIME_TYPES="application/x-ppapi-nfwebcrypto"
