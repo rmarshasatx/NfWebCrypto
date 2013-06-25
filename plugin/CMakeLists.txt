@@ -26,22 +26,32 @@ configure_file (
 )
 include_directories (${PROJECT_BINARY_DIR})   # Version.h lands in the binary tree
 
-set(LIBNAME "nfwebcrypto")
 
-# Detect OS
+# Switches for OS
 # CMAKE_TOOLCHAIN_FILE will be one of the following:
 #   crosArm.cmake
 #   crosAmd64.cmake
 #   crosIa32.cmake
 #   linux64.cmake
-# Switches for OS
 if(CMAKE_TOOLCHAIN_FILE MATCHES ".*cros.*")
+    set(LIBNAME "netflixhelper2")
     set(PLUGIN_PATH "/opt/google/chrome/pepper")
+    # For the .info file
     set(SOPATH "${PLUGIN_PATH}/lib${LIBNAME}.so")
+    set(PLUGIN_NAME "NetflixHelper2")
+    set(DESCRIPTION "Helper for the Netflix application")
+    set(MIME_TYPES "application/x-ppapi-netflixhelper2")
+    # end .info file
     #set(RUNTIME_SO_DEPENDENCY_PATH "${PLUGIN_PATH}")
     #link_directories(${RUNTIME_SO_DEPENDENCY_PATH})
 else()
+    set(LIBNAME "nfwebcrypto")
+    # For the .info file
     set(SOPATH "lib${LIBNAME}.so")
+    set(PLUGIN_NAME "NfWebCrypto")
+    set(DESCRIPTION "Provider for W3C Web Crypto API")
+    set(MIME_TYPES "application/x-ppapi-nfwebcrypto")
+    # end .info file
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
@@ -72,13 +82,14 @@ set_target_properties(plugin PROPERTIES OUTPUT_NAME "${LIBNAME}")
 # set up for final copies
 set(FINAL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/plugin)
 get_target_property(BIN_NAME plugin LOCATION)
-set(INFO_FILE ${LIBNAME}.info)
+set(INFO_FILE_IN nfwebcrypto.info)
+set(INFO_FILE_OUT ${LIBNAME}.info)
 
 # copy/edit the cadmium.info file from source dir template to bin dir result
 set(CMAKE_VERSION_STRING "${Plugin_VERSION_MAJOR}.${Plugin_VERSION_MINOR}.${Plugin_VERSION_MICRO}" CACHE STRING "version")
 execute_process(COMMAND "date" "+%Y" OUTPUT_VARIABLE DATESTR)
 string(REGEX REPLACE "(\r?\n)+$" "" DATESTR "${DATESTR}")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${INFO_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${INFO_FILE})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${INFO_FILE_IN} ${CMAKE_CURRENT_BINARY_DIR}/${INFO_FILE_OUT})
 
 # copy all final files to the same output location
 add_custom_command(

@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Registration file for the Netflix Web Crypto plugin.
+# Registration file for the ${PLUGIN_NAME} plugin.
 
 FILE_NAME=${SOPATH}
-PLUGIN_NAME="NfWebCrypto"
+PLUGIN_NAME="${PLUGIN_NAME}"
 VERSION="${CMAKE_VERSION_STRING}"
-DESCRIPTION="Provides W3C Web Crypto functionality"
-MIME_TYPES="application/x-ppapi-nfwebcrypto"
+DESCRIPTION="${DESCRIPTION}"
+MIME_TYPES="${MIME_TYPES}"
