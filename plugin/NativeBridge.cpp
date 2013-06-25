@@ -249,6 +249,7 @@ NativeBridge::NativeBridge(pp::InstancePrivate * pInstance, CadmiumCrypto * cadm
     jsFunctionMap_["derive"]     = &NativeBridge::derive;
     jsFunctionMap_["unwrapKey"]  = &NativeBridge::unwrapKey;
     jsFunctionMap_["wrapKey"]    = &NativeBridge::wrapKey;
+    jsFunctionMap_["getDeviceId"]= &NativeBridge::getDeviceId;
 }
 
 NativeBridge::~NativeBridge()
@@ -1248,6 +1249,26 @@ bool NativeBridge::wrapKey(const string& cmdIndex, Variant& argsVar,
     returnVarMap["payload"]["buffer"] = wrappedKeyJcs;
     setSuccess(returnVarMap);
 
+    return true;
+}
+
+bool NativeBridge::getDeviceId(const string& cmdIndex, Variant& argsVar,
+        VariantMap& returnVarMap)
+{
+    // Return this device's ID string
+    // Input:
+    //     argsObj: {<empty>}
+    // Output:
+    //     payload: {
+    //         buffer: string; deviceId
+    //     }
+
+    string deviceIdStr;
+    CadErr err = cadmiumCrypto_->getDeviceId(deviceIdStr);
+    if (isError(err, cmdIndex))
+        return false;
+    returnVarMap["payload"]["buffer"] = deviceIdStr;
+    setSuccess(returnVarMap);
     return true;
 }
 

@@ -16,9 +16,9 @@ In priority order,
 11. Port to other plugin technologies, e.g. NPAPI for Mozilla, Opera, Safari
 
 CrOS only
-a - build for CrOs DONE
-b - site check DONE
-c - name change for cros
-d - derive unique ESN
+a - build for CrOs -DONE-
+b - site check -DONE-
+c - name change for cros -DONE-
+d - derive unique device ID -DONE-
 e - secure export/import key for persistent storage
 f - smoke gtest tests for build

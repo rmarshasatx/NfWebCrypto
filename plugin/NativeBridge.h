@@ -70,6 +70,7 @@ private:
     JsMethod wrapKey;
     JsMethod encryptDecrypt;
     JsMethod signVerify;
+    JsMethod getDeviceId;
 private:
     pp::InstancePrivate * const pInstance_;
     crypto::CadmiumCrypto * const cadmiumCrypto_;

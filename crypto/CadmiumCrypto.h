@@ -27,6 +27,8 @@
 
 namespace cadmium {
 
+class IDeviceInfo;
+
 namespace base { class Variant; }
 
 namespace crypto {
@@ -43,7 +45,7 @@ class CadmiumCrypto : base::Noncopyable
 {
 public:
 
-    CadmiumCrypto();
+    CadmiumCrypto(IDeviceInfo * pDeviceInfo);
 
     ~CadmiumCrypto();
 
@@ -337,6 +339,11 @@ public:
     CadErr wrapJwe(uint32_t toBeWrappedKeyHandle, uint32_t wrappingKeyHandle,
             const base::Variant& wrappingAlgoObj, JweEncMethod jweEncMethod,
             std::string& wrappedKeyJcs);
+
+    //---------------- NON Web Crypto APIs------------------------------------//
+
+    CadErr getDeviceId(std::string& deviceId) const;
+
 
 private:
     // Note, to minimize client dependencies and hide details, this class is a

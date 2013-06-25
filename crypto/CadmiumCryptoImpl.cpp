@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <base/Base64.h>
 #include <base/DebugUtil.h>
+#include <base/IDeviceInfo.h>
 #include <crypto/OpenSSLLib.h>
 #include <crypto/NtbaUtil.h>
 #include <crypto/HMAC.h>
@@ -246,8 +247,9 @@ bool isJweJs(const string& input)
 
 }   // namespace anonymous
 
-CadmiumCrypto::CadmiumCryptoImpl::CadmiumCryptoImpl()
-:   isInited_(false)
+CadmiumCrypto::CadmiumCryptoImpl::CadmiumCryptoImpl(IDeviceInfo * pDeviceInfo)
+:   pDeviceInfo_(pDeviceInfo)
+,   isInited_(false)
 ,   nextKeyHandle_(kStartKeyHandle)
 {
 }
@@ -1983,6 +1985,14 @@ CadErr CadmiumCrypto::CadmiumCryptoImpl::symKeyGen(const Variant& algVar,
     keyHandle = nextKeyHandle_++;
     Key key(randBytes, shared_ptr<RsaContext>(), SECRET, extractable, algVar, keyUsage);
     keyMap_[keyHandle] = key;
+    return CAD_ERR_OK;
+}
+
+CadErr CadmiumCrypto::CadmiumCryptoImpl::getDeviceId(string& deviceId) const
+{
+    if (!isInited_)
+        return CAD_ERR_NOT_INITIALIZED;
+    deviceId = pDeviceInfo_->getDeviceId();
     return CAD_ERR_OK;
 }
 

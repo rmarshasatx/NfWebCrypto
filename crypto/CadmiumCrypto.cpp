@@ -29,8 +29,8 @@ namespace crypto {
 
 // CadmiumCrypto is "compiler firewall" in front of CadmiumCryptoImpl
 
-CadmiumCrypto::CadmiumCrypto()
-:   impl_(new CadmiumCryptoImpl())
+CadmiumCrypto::CadmiumCrypto(IDeviceInfo * pDeviceInfo)
+:   impl_(new CadmiumCryptoImpl(pDeviceInfo))
 {
 }
 
@@ -141,6 +141,11 @@ CadErr CadmiumCrypto::wrapJwe(uint32_t toBeWrappedKeyHandle, uint32_t wrappingKe
 {
     return impl_->wrapJwe(toBeWrappedKeyHandle, wrappingKeyHandle, wrappingAlgoObj,
             jweEncMethod, wrappedKeyJcs);
+}
+
+CadErr CadmiumCrypto::getDeviceId(string& deviceId) const
+{
+    return impl_->getDeviceId(deviceId);
 }
 
 string toString(CadmiumCrypto::Algorithm algorithm)

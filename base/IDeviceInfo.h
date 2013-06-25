@@ -19,7 +19,7 @@ class IDeviceInfo
 {
 public:
     virtual ~IDeviceInfo() {}
-    virtual std::string getDeviceId() = 0;
+    virtual std::string getDeviceId() {return std::string();};
 
 };
 

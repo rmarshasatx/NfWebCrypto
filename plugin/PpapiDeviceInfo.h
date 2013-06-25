@@ -11,7 +11,7 @@
 #include <ppapi/utility/completion_callback_factory.h>
 #include <base/Mutex.h>
 #include <base/ConditionVariable.h>
-#include "IDeviceInfo.h"
+#include <base/IDeviceInfo.h>
 
 using cadmium::base::Mutex;
 using cadmium::base::ConditionVariable;

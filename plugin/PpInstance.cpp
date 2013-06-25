@@ -31,6 +31,7 @@
 #include "BackgroundDispatcher.h"
 #include "NativeBridge.h"
 #include "BrowserConsoleLog.h"
+#include "PpapiDeviceInfo.h"
 
 using namespace std;
 using namespace cadmium::base;
@@ -224,21 +225,15 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
         return false;
     }
 
-    // Make an instance of CadmiumCrypto and init it
-    cadmiumCrypto_.reset(new CadmiumCrypto());
-    if (cadmiumCrypto_->init(getRandBytes()) != CAD_ERR_OK)
-    {
-        DLOG() << "CadmiumCrypto::init failure\n";
-        LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_ERROR, "CadmiumCrypto::init failure");
-        return false;
-    }
+    // get a random number
+    randSeed_ = getRandBytes();
 
-    // Hook the CadmiumCrypto instance to a NativeBridge instance
-    nativeBridge_.reset(new NativeBridge(this, cadmiumCrypto_.get()));
-
-    // Make the dispatcher for incoming messages and hook it up to the native bridge
-    backgroundDispatcher_ = new BackgroundDispatcher(nativeBridge_.get());
-    backgroundDispatcher_->start();
+    // construct device info class for Chrome OS, others get dummy
+#ifdef CHROMEOS
+    deviceInfo_.reset(new PpapiDeviceInfo(this));
+#else
+    deviceInfo_.reset(new IDeviceInfo());
+#endif
 
     // Init the rest on a separate thread
     backgroundInitThread_ =
@@ -262,8 +257,24 @@ uint32_t PpInstance::initOnBackgroundThread(uint32_t /*result*/)
     FUNCTIONSCOPELOG;
     assert(!isMainThread());
 
-    LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, "PpInstance: Init complete, sending Ready message");
+    // Make an instance of CadmiumCrypto and init it
+    cadmiumCrypto_.reset(new CadmiumCrypto(deviceInfo_.get()));
+    if (cadmiumCrypto_->init(randSeed_) != CAD_ERR_OK)
+    {
+        DLOG() << "CadmiumCrypto::init failure\n";
+        LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_ERROR, "CadmiumCrypto::init failure");
+        return false;
+    }
 
+    // Hook the CadmiumCrypto instance to a NativeBridge instance
+    nativeBridge_.reset(new NativeBridge(this, cadmiumCrypto_.get()));
+
+    // Make the dispatcher for incoming messages and hook it up to the native bridge
+    backgroundDispatcher_ = new BackgroundDispatcher(nativeBridge_.get());
+    backgroundDispatcher_->start();
+
+    // We are ready now
+    LogToBrowserConsole(pp_instance(), PP_LOGLEVEL_LOG, "PpInstance: Init complete, sending Ready message");
     nativeBridge_->sendReady(0);    // 0 means success; fail is not an option!
 
     return 0;

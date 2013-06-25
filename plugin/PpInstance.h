@@ -27,6 +27,7 @@ namespace cadmium
 
 class BackgroundDispatcher;
 class INativeBridge;
+class IDeviceInfo;
 
 namespace base { class SimpleThread; }
 
@@ -50,6 +51,8 @@ private:
     std::auto_ptr<cadmium::INativeBridge> nativeBridge_;
     std::auto_ptr<cadmium::crypto::CadmiumCrypto> cadmiumCrypto_;
     uint32_t msgCount_;
+    std::vector<unsigned char> randSeed_;
+    std::auto_ptr<IDeviceInfo> deviceInfo_;
 };
 
 }   // namespace cadmium

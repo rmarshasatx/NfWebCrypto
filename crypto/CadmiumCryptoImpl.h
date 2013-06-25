@@ -33,7 +33,7 @@ class DiffieHellmanContext;
 class CadmiumCrypto::CadmiumCryptoImpl : base::Noncopyable
 {
 public:
-    CadmiumCryptoImpl();
+    CadmiumCryptoImpl(IDeviceInfo * pDeviceInfo);
     ~CadmiumCryptoImpl();
     CadErr init(const Vuc& prngSeed);
     void addEntropy(const std::string& entropyBytes);
@@ -71,6 +71,7 @@ public:
             std::string& wrappedKeyJcs);
     CadErr symKeyGen(const base::Variant& algVar, bool extractable,
             const std::vector<KeyUsage> keyUsage, uint32_t &keyHandle);
+    CadErr getDeviceId(std::string& deviceId) const;
 private:
     struct Key
     {
@@ -98,6 +99,7 @@ private:
             const base::Variant& algVar, bool extractable,
             const std::vector<KeyUsage>& keyUsage, uint32_t& keyHandle);
 private:
+    IDeviceInfo * const pDeviceInfo_;
     bool isInited_;
     std::map<uint32_t, std::vector<unsigned char> > keyCache_;
     uint32_t nextKeyHandle_;
