@@ -145,6 +145,8 @@
             runs(function () {
                 expect(error).toBeUndefined();
                 expect(complete).toBeTruthy();
+                // device ID will be empty except on Chrome OS, where it will be 52 chars long
+                expect(result.length == 0 || result.length == 52).toBeTrue;
             });
         });
 
