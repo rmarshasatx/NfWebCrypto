@@ -67,8 +67,8 @@ Vuc getRandBytes()
     return randBytes;
 }
 
-// site check code for Chrome OS only
-#ifdef CHROMEOS
+// site check code for restricted platforms
+#ifdef RESTRICTED_PLATFORM
 
 // Returns true if the right side of the string is exactly match.
 // For example, for "foobar", "bar" would return true but "oba" would not.
@@ -122,7 +122,7 @@ bool isSiteAllowed(pp::InstancePrivate* instance)
     return doesRightSideOfStringMatch(GetPageHost(instance), allowedHost);
 };
 
-// any origin OK when not Chrome OS
+// any origin OK when not on a restricted platform
 #else
 
 bool isSiteAllowed(pp::InstancePrivate*)
@@ -130,7 +130,7 @@ bool isSiteAllowed(pp::InstancePrivate*)
     return true;
 }
 
-#endif  // ifdef CHROMEOS
+#endif  // ifdef RESTRICTED_PLATFORM
 
 class Callback
 {
@@ -228,8 +228,7 @@ bool PpInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
     // get a random number
     randSeed_ = getRandBytes();
 
-    // construct device info class for Chrome OS, others get dummy
-#ifdef CHROMEOS
+#ifdef RESTRICTED_PLATFORM
     deviceInfo_.reset(new PpapiDeviceInfo(this));
 #else
     deviceInfo_.reset(new IDeviceInfo());

@@ -31,8 +31,9 @@ public:
     PpapiDeviceInfo(pp::Instance* pInstance);
     ~PpapiDeviceInfo();
     virtual std::string getDeviceId();
-    void setDeviceId(std::string deviceId); // FIXME: temp until pp::flash::DeviceID() works
+    virtual std::vector<uint8_t> getBinaryDeviceId();
 private:
+    void waitUntilReady();
     void gotDeviceId(int32_t result, const pp::Var& deviceId);
 private:
     pp::CompletionCallbackFactory<PpapiDeviceInfo> callbackFactory_;
@@ -41,6 +42,7 @@ private:
     base::Mutex mutex_;
     base::ConditionVariable condVar_;
     std::string rawDeviceIdStr_;
+    std::vector<uint8_t> deviceIdBin_;
     std::string deviceIdStr_;
 };
 

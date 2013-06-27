@@ -315,7 +315,7 @@ bool RsaContext::publicEncrypt(const Vuc & in, Vuc & out, Padding padding)
         case PKCS1_OAEP:    osslPadding = RSA_PKCS1_OAEP_PADDING;   break;
         default:            assert(false);                          break;
     }
-    const int rsaSize = RSA_size(pOsslRsa_);
+    const size_t rsaSize = RSA_size(pOsslRsa_);
     if (rsaSize <= 0)
         return false;
     if (in.size() > (rsaSize - 11))

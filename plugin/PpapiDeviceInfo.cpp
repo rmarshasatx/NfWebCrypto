@@ -8,6 +8,7 @@
 #include "PpapiDeviceInfo.h"
 #include <stdlib.h>
 #include <string>
+#include <algorithm>
 #include <ppapi/cpp/var.h>
 #include <ppapi/cpp/private/flash_device_id.h>
 #include <base/ScopedMutex.h>
@@ -20,6 +21,29 @@ using cadmium::base::ScopedMutex;
 
 namespace cadmium
 {
+
+namespace
+{
+
+vector<uint8_t> hexTextToBin(const string& hexText)
+{
+    // Since hexText is a hex number in a text string, each two chars represent
+    // an 8-bit number.
+    assert((hexText.size() % 2) == 0);
+    vector<uint8_t> data;
+    data.reserve(hexText.size()/2);
+    string::size_type idx = 0;
+    while (idx < hexText.size())
+    {
+        const string byteHex = hexText.substr(idx, 2);
+        const uint8_t byteBin = static_cast<uint8_t>(strtol(byteHex.c_str(), NULL, 16));
+        data.push_back(byteBin);
+        idx += 2;
+    }
+    return data;
+}
+
+}   // anonymous namespace
 
 PpapiDeviceInfo::PpapiDeviceInfo(pp::Instance* pInstance)
 :   callbackFactory_(this)
@@ -38,13 +62,37 @@ PpapiDeviceInfo::~PpapiDeviceInfo()
 {
 }
 
-string PpapiDeviceInfo::getDeviceId()
+void PpapiDeviceInfo::gotDeviceId(int32_t result, const pp::Var& deviceId)
+{
+    assert(isMainThread());
+    ScopedMutex scopedMutex(mutex_);
+    rawDeviceIdStr_.clear();
+    if (result == PP_OK && deviceId.is_string())
+        rawDeviceIdStr_ = deviceId.AsString();
+    else
+        DLOG() << "PpapiDeviceInfo::gotDeviceId: ERROR! result = " << result <<
+            "; deviceId.DebugString = " << deviceId.DebugString() << endl;
+    // Google says the device ID from PPAPI will always be 64 chars: a string
+    // with the text value of the numerical ID.
+    const string::size_type SPEC_SIZE = 64;
+    string::size_type rawSize = rawDeviceIdStr_.size();
+    assert(rawSize == SPEC_SIZE);
+    // If the actual size is out of spec and the assert did not kill us, at
+    // least make sure the size is capped at 64 and even.
+    if (rawSize > SPEC_SIZE)
+        rawDeviceIdStr_.resize(SPEC_SIZE);
+    else if (rawSize % 2)
+        rawDeviceIdStr_.resize(rawSize-1);
+    isInited_ = true;
+    condVar_.signal();
+}
+
+void PpapiDeviceInfo::waitUntilReady()
 {
     assert(!isMainThread());
     // We get initialized by the PPAPI callback requested in the ctor. Block
     // here until that happens. Once the callback occurs, or we time out waiting
-    // for it, we are forever after initialized. We are also initialized if
-    // somebody had previously called the backdoor setDeviceId() to force it.
+    // for it, we are forever after initialized.
     ScopedMutex scopedMutex(mutex_);
     if (!isInited_)
     {
@@ -63,69 +111,44 @@ string PpapiDeviceInfo::getDeviceId()
         }
         isInited_ = true;
     }
-    if (deviceIdStr_.empty() && !rawDeviceIdStr_.empty())
+}
+
+vector<uint8_t> PpapiDeviceInfo::getBinaryDeviceId()
+{
+    // Block until the mainthread callback has populated rawDeviceIdStr_
+    waitUntilReady();
+    if (deviceIdBin_.empty())
     {
-        // Convert the raw device ID data to ESN format.
-
-        // Google says the device ID from Chrome OS PPAPI will always be 64
-        // characters, a string with the text value of the numerical ID.
-        const string::size_type SPEC_SIZE = 64;
-        string::size_type rawSize = rawDeviceIdStr_.size();
-        assert(rawSize == SPEC_SIZE);
-        // If the actual size is out of spec and the assert did not kill us, at
-        // least make sure the size is capped at 64 and even.
-        if ((rawSize > SPEC_SIZE) || (rawSize % 2))
+        // For devices that don't support device ID, return all zeros
+        if (rawDeviceIdStr_.empty())
         {
-            if (rawSize > SPEC_SIZE)
-                rawDeviceIdStr_.resize(SPEC_SIZE);
-            else if (rawSize % 2)
-                rawDeviceIdStr_.resize(rawSize-1);
-            rawSize = rawDeviceIdStr_.size();
+            deviceIdBin_ = vector<uint8_t>(32, 0);
         }
-
-        if (rawSize)
+        else
         {
-            // Since the value is a hex number as a text string, so each two
-            // chars represent an 8-bit number.
-            vector<uint8_t> data;
-            data.reserve(rawSize/2);
-            string::size_type idx = 0;
-            while (idx < rawSize)
+            deviceIdBin_ = hexTextToBin(rawDeviceIdStr_);
+            // deviceIdBin_ should be 32 bytes by spec. If not pad with zeros.
+            if (deviceIdBin_.size() != 32)
             {
-                const string byteHex = rawDeviceIdStr_.substr(idx, 2);
-                uint8_t byteBin = static_cast<uint8_t>(strtol(byteHex.c_str(), NULL, 16));
-                data.push_back(byteBin);
-                idx += 2;
+                const vector<uint8_t> zeros(32 - deviceIdBin_.size(), 0);
+                std::copy(zeros.begin(), zeros.end(), back_inserter(deviceIdBin_));
             }
-
-            // Now we have a vector of 32 8-bit values. Convert this to Base32
-            // and this is becomes a 52-byte ESN-compatible device ID.
-            deviceIdStr_ = Base32::encode(data);
         }
     }
+    return deviceIdBin_;
+}
+
+string PpapiDeviceInfo::getDeviceId()
+{
+    if (deviceIdStr_.empty())
+    {
+        vector<uint8_t> binId = getBinaryDeviceId();
+        // Convert the vector of 32 8-bit values to Base32, and this becomes a
+        // 52-byte ESN-compatible device ID.
+        if (!binId.empty())
+            deviceIdStr_ = Base32::encode(binId);
+    }
     return deviceIdStr_;
-}
-
-void PpapiDeviceInfo::gotDeviceId(int32_t result, const pp::Var& deviceId)
-{
-    assert(isMainThread());
-    ScopedMutex scopedMutex(mutex_);
-    rawDeviceIdStr_.clear();
-    if (result == PP_OK && deviceId.is_string())
-        rawDeviceIdStr_ = deviceId.AsString();
-    else
-        DLOG() << "PpapiDeviceInfo::gotDeviceId: ERROR! result = " << result <<
-            "; deviceId.DebugString = " << deviceId.DebugString() << endl;
-    isInited_ = true;
-    condVar_.signal();
-}
-
-void PpapiDeviceInfo::setDeviceId(string deviceId)
-{
-    ScopedMutex scopedMutex(mutex_);
-    assert(!deviceId.empty());
-    deviceIdStr_ = deviceId;
-    isInited_ = true;
 }
 
 }   // namespace cadmium

@@ -10,7 +10,9 @@
 #ifndef IDEVICEINFO_H_
 #define IDEVICEINFO_H_
 
+#include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace cadmium
 {
@@ -20,7 +22,7 @@ class IDeviceInfo
 public:
     virtual ~IDeviceInfo() {}
     virtual std::string getDeviceId() {return std::string();};
-
+    virtual std::vector<uint8_t> getBinaryDeviceId() {return std::vector<uint8_t>();}
 };
 
 }   // namespace cadmium

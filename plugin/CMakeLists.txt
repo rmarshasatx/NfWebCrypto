@@ -26,25 +26,6 @@ configure_file (
 )
 include_directories (${PROJECT_BINARY_DIR})   # Version.h lands in the binary tree
 
-
-# Switches for OS
-# CMAKE_TOOLCHAIN_FILE will be one of the following:
-#   crosArm.cmake
-#   crosAmd64.cmake
-#   crosIa32.cmake
-#   linux64.cmake
-if(CMAKE_TOOLCHAIN_FILE MATCHES ".*cros.*")
-    set(LIBNAME "netflixhelper2")
-    set(PLUGIN_PATH "/opt/google/chrome/pepper")
-    # For the .info file
-    set(SOPATH "${PLUGIN_PATH}/lib${LIBNAME}.so")
-    set(PLUGIN_NAME "NetflixHelper2")
-    set(DESCRIPTION "Helper for the Netflix application")
-    set(MIME_TYPES "application/x-ppapi-netflixhelper2")
-    # end .info file
-    #set(RUNTIME_SO_DEPENDENCY_PATH "${PLUGIN_PATH}")
-    #link_directories(${RUNTIME_SO_DEPENDENCY_PATH})
-else()
     set(LIBNAME "nfwebcrypto")
     # For the .info file
     set(SOPATH "lib${LIBNAME}.so")
@@ -52,7 +33,6 @@ else()
     set(DESCRIPTION "Provider for W3C Web Crypto API")
     set(MIME_TYPES "application/x-ppapi-nfwebcrypto")
     # end .info file
-endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 

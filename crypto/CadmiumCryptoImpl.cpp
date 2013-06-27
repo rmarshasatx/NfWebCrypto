@@ -262,10 +262,19 @@ CadErr CadmiumCrypto::CadmiumCryptoImpl::init(const Vuc& prngSeed)
 {
     if (isInited_)
         return CAD_ERR_ALREADY_INITIALIZED;
+
+    // init OpenSSL
     if (prngSeed.size() < MIN_SEED_LEN)
         return CAD_ERR_BADARG;
     if (!OpenSSLLib::init(prngSeed))
         return CAD_ERR_INTERNAL;
+
+    // TODO:
+    // call getBinaryDeviceId() on pDeviceInfo_
+    // encrypt this with a hard-coded key
+    // create Key object and save it to the key map
+    // save this keyhandle as a special value and use for special case wrap/unwrap
+
     isInited_ = true;
     return CAD_ERR_OK;
 }
